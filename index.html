@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Authorisation code</title>
+<style>
+  :root { --bg:#FAF7F2; --card:#fff; --ink:#33302B; --soft:#6d675e; --sage:#A7B99A; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#23211E; --card:#2E2B27; --ink:#F5EFE1; --soft:#a89f92; }
+  }
+  :root[data-theme="dark"] { --bg:#23211E; --card:#2E2B27; --ink:#F5EFE1; --soft:#a89f92; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); min-height:100vh;
+         display:flex; align-items:center; justify-content:center; padding:16px;
+         font-family:"Nunito",-apple-system,Segoe UI,sans-serif; }
+  .card { background:var(--card); border-radius:16px; padding:32px; max-width:640px; width:100%;
+          box-shadow:0 2px 24px rgba(0,0,0,.08); }
+  h1 { font-size:22px; margin:0 0 4px; }
+  p  { color:var(--soft); margin:0 0 20px; font-size:15px; line-height:1.5; }
+  code, .val { font-family:ui-monospace,Consolas,monospace; }
+  .val { display:block; background:var(--bg); border-radius:10px; padding:14px 16px;
+         word-break:break-all; font-size:15px; margin-bottom:10px; }
+  button { background:var(--sage); color:#23211E; border:0; border-radius:10px;
+           padding:12px 20px; font-size:15px; font-weight:700; cursor:pointer; }
+  button:active { transform:translateY(1px); }
+  .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .ok { color:var(--sage); font-weight:700; font-size:14px; }
+  .err { color:#b4544a; }
+  .lbl { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--soft);
+         margin-bottom:6px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Authorisation code</h1>
+    <p id="intro">Paste the full URL into the terminal, or copy just the code below.</p>
+
+    <div id="out"></div>
+
+    <div class="row">
+      <button id="copyUrl">Copy full URL</button>
+      <button id="copyCode">Copy code only</button>
+      <span class="ok" id="said"></span>
+    </div>
+  </div>
+
+<script>
+  var q = new URLSearchParams(location.search);
+  var code = q.get("code"), state = q.get("state");
+  var err = q.get("error_description") || q.get("error");
+  var out = document.getElementById("out");
+
+  function field(label, value) {
+    return '<div class="lbl">' + label + '</div><div class="val">' + value + '</div>';
+  }
+
+  if (err) {
+    document.getElementById("intro").innerHTML =
+      '<span class="err">Etsy returned an error. Start the flow again.</span>';
+    out.innerHTML = field("error", err);
+  } else if (code) {
+    out.innerHTML = field("code", code) + (state ? field("state", state) : "");
+  } else {
+    document.getElementById("intro").textContent =
+      "No code in the address bar. Open the link from the terminal first.";
+  }
+
+  function copy(text, msg) {
+    navigator.clipboard.writeText(text).then(function () {
+      var s = document.getElementById("said");
+      s.textContent = msg;
+      setTimeout(function () { s.textContent = ""; }, 1800);
+    });
+  }
+  document.getElementById("copyUrl").onclick = function () {
+    copy(location.href, "URL copied");
+  };
+  document.getElementById("copyCode").onclick = function () {
+    copy(code || "", code ? "code copied" : "");
+  };
+</script>
+</body>
+</html>
